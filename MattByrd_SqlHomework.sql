@@ -94,3 +94,98 @@ from customer
 inner join payment on customer.customer_id = payment.customer_id
 group by customer.customer_id
 order by last_name asc;
+
+-- 7a
+select title 
+from film
+where 
+(title like ('K%') 
+or title like ('Q%')) and
+(select language_id
+from language 
+where language_id = 1);
+
+-- 7b
+select CONCAT(first_name, ' ', last_name) As Actor_Name
+from actor
+where actor_id in
+(
+  select actor_id
+  from film_actor
+  where film_id = 17
+);
+
+-- 7c
+select first_name, last_name, email 
+from customer
+inner join address on address.address_id = customer.address_id
+inner join city on city.city_id = address.city_id
+inner join country on country.country_id = city.country_id
+where country.country_id = 20;
+
+-- 7d
+select title
+from film 
+where film_id in 
+(
+  select film_id
+  from film_category
+  where category_id = 
+    (select category_id
+     from category
+     where name = 'Family'
+	)
+);
+
+-- 7e 
+select film.title as 'Film', count(film.title) as 'Rentals'
+from rental
+inner join inventory on rental.inventory_id = inventory.inventory_id
+inner join film on film.film_id = inventory.film_id
+group by film.title
+order by count(film.title) desc;
+
+-- 7f
+select store.store_id as 'Store_Number', sum(payment.amount) as 'Total (in Dollars)'
+from store
+inner join inventory on store.store_id = inventory.store_id
+inner join rental on inventory.inventory_id = rental.inventory_id
+inner join payment on payment.rental_id = rental.rental_id
+group by store.store_id;
+
+-- 7g
+select store.store_id, city.city, country.country
+from store
+inner join address on store.address_id = address.address_id
+inner join city on city.city_id = address.city_id
+inner join country on country.country_id = city.country_id;
+
+-- 7h
+select category.name as category, sum(payment.amount) as gross_sales
+from category
+inner join film_category on category.category_id = film_category.category_id
+inner join inventory on inventory.film_id = film_category.film_id
+inner join rental on rental.inventory_id = inventory.inventory_id
+inner join payment on payment.rental_id = rental.rental_id
+group by category.name
+order by gross_sales desc
+limit 5;
+
+-- 8a
+create view Top_5_Genre_by_Revenue as 
+  (select category.name as category, sum(payment.amount) as gross_sales
+   from category
+   inner join film_category on category.category_id = film_category.category_id
+   inner join inventory on inventory.film_id = film_category.film_id
+   inner join rental on rental.inventory_id = inventory.inventory_id
+   inner join payment on payment.rental_id = rental.rental_id
+   group by category.name
+   order by gross_sales desc
+   limit 5
+   );
+   
+-- 8b
+select * from Top_5_Genre_by_Revenue;
+
+-- 8c
+drop view Top_5_Genre_by_Revenue;
